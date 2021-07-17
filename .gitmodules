@@ -1,0 +1,3 @@
+[submodule "src/callendar_telegram"]
+	path = src/callendar_telegram
+	url = https://github.com/chellarao-chowdary/calendar-telegram.git
