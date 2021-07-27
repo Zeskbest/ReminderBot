@@ -94,14 +94,13 @@ def second_menu_message():
 
 
 def HE_WROTE_SMHT(update: Update, context: CallbackContext) -> None:
-    pass
+    update.message.reply_text(update.callback_query.data)
 
 
 def main() -> None:
     ############################# Handlers #########################################
     updater = Updater(os.environ["TELEGRAM_TOKEN"], use_context=True)
     apply_menus(updater)
-    updater.dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, HE_WROTE_SMHT, pass_chat_data=True))
     updater.dispatcher.add_error_handler(error)
 
     updater.start_polling(timeout=0.1)
