@@ -76,9 +76,10 @@ class ChatUser(Base):
 
     @classmethod
     def get_or_create(cls, update: Update) -> ChatUser:
-        user = User.get_or_create(update)
-        chat = Chat.get_or_create(update)
         with Session(engine) as sess:
+            user = User.get_or_create(update)
+            chat = Chat.get_or_create(update)
+            sess.add_all((user, chat))
             attrs = dict(user_id=user.telegram_id, chat_id=chat.telegram_id)
             chatUser = sess.query(ChatUser).filter_by(**attrs).one_or_none()
             if chatUser is None:
