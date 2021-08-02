@@ -60,8 +60,7 @@ class CancelMenu(_Menu):
     @classmethod
     def handle(cls, update: Update, context: CallbackContext) -> Message:
         Reminder.pop_current(update)
-        cls.resolve_markup(update, context, "Ok =(")
-        return MainMenu.handle_menu(update, context)
+        return cls.resolve_markup(update, context, "Ok =(")
 
 
 class ReminderNameMenu(_Menu):
