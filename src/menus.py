@@ -133,7 +133,7 @@ class SaveMenu(_Menu):
         for attrName in ('name', 'date'):
             if getattr(reminder, attrName) is None:
                 cls.resolve_markup(update, context, f"Fulfill the '{attrName}', it is required.")
-                return AddReminderMenu.handle_menu(update, context)
+                return AddReminderMenu.handle(update, context)
 
         models.Reminder.create(reminder, update)
         Reminder.pop_current(update)
@@ -172,7 +172,16 @@ class AddReminderMenu(_Menu):
 
     @classmethod
     def handle_menu(cls, update: Update, context: CallbackContext) -> Message:
-        return update.effective_chat.send_message(text=cls.name, reply_markup=cls.markup)
+        if reminder := Reminder.get_current(update):
+            if reminder.waiting_for is not None:
+                reminder.waiting_for = None
+        else:
+            reminder = Reminder(update)
+        text = (
+            f"{cls.name}\n"
+            f"{reminder}"
+        )  # todo rm copypaste
+        return update.effective_chat.send_message(text=text, reply_markup=cls.markup)
 
 
 class MainMenu(_Menu):
