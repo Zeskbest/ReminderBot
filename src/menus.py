@@ -60,7 +60,7 @@ class CancelMenu(_Menu):
     @classmethod
     def handle(cls, update: Update, context: CallbackContext) -> Message:
         Reminder.pop_current(update)
-        return cls.resolve_markup(update, context, "Ok =(")
+        return cls.resolve_markup(update, context, "ฅ^•ﻌ•^ฅ")
 
 
 class ReminderNameMenu(_Menu):
@@ -128,11 +128,11 @@ class SaveMenu(_Menu):
     @classmethod
     def handle(cls, update: Update, context: CallbackContext) -> Message:
         # todo really save it
-        reminder = Reminder.get_current(update)
+        reminder = cls.get_reminder(update, context)
         for attrName in ('name', 'date'):
             if getattr(reminder, attrName) is None:
                 cls.resolve_markup(update, context, f"Fulfill the '{attrName}', it is required.")
-                return AddReminderMenu.handle(update, context)
+                return AddReminderMenu.handle_menu(update, context)
 
         models.Reminder.create(reminder, update)
         Reminder.pop_current(update)
@@ -256,7 +256,15 @@ class ReminderMsg(_Menu):
             reminder.snooze(relativedelta(minutes=snooze))
         else:
             raise NotImplementedError(f"Unknown action: {action}")
-        return cls.resolve_markup(update, context, "M'kay...")
+
+        if reminder.status == 1:
+            text = (
+                    "M'kay.\n"
+                    "Reminder is active, next remind in " + reminder.remind_time_real.strftime('%d.%m.%Y %H:%M:%S')
+            )
+        else:
+            text = "M'kay.\nReminder ended"
+        return cls.resolve_markup(update, context, text)
 
 
 class RawMessagesProcessor(_Menu):

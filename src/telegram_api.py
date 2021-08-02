@@ -1,7 +1,7 @@
 import os
 import traceback
-from datetime import timedelta
 
+from dateutil.relativedelta import relativedelta
 from telegram import Update
 from telegram.ext import Updater, CallbackContext
 
@@ -20,12 +20,12 @@ def error(update: Update, context: CallbackContext) -> None:
 def push_reminders(context: CallbackContext) -> None:
     for reminder in models.Reminder.get_actual_reminders():
         ReminderMsg.handle_first(context, reminder)
-        reminder.snooze(timedelta(seconds=10))
+        reminder.snooze(relativedelta(days=1))
 
 
 def main() -> None:
     ############################# Handlers #########################################
-    updater = Updater(os.environ["TELEGRAM_TOKEN"], use_context=True, workers=1)
+    updater = Updater(os.environ["TELEGRAM_TOKEN"], use_context=True)
     apply_menus(updater)
     updater.dispatcher.add_error_handler(error)
     updater.job_queue.run_repeating(push_reminders, 10)

@@ -151,12 +151,12 @@ class Reminder(Base):
         self.rewind()
 
     def rewind(self):
-        if self.period is None:
+        locals_ = {}
+        exec(f"delta = {self.period}", {"relativedelta": relativedelta}, locals_)
+        delta = locals_["delta"]
+        if delta is None:
             self.stop()
         else:
-            locals_ = {}
-            exec(f"delta = {self.period}", {"relativedelta": relativedelta}, locals_)
-            delta = locals_["delta"]
             with Session(engine) as sess:
                 self.remind_time_real = self.remind_time_planned = self.remind_time_planned + delta
                 sess.add(self)
