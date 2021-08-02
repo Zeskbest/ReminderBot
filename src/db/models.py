@@ -137,6 +137,19 @@ class Reminder(Base):
             chat_id = sess.query(Chat.telegram_id).join(ChatUser).join(Reminder).filter(Reminder.id == self.id).scalar()
             return chat_id
 
+    def rewind(self):
+        locals_ = {}
+        exec(f"delta = {self.period}", {"relativedelta": relativedelta}, locals_)
+        delta = locals_["delta"]
+        if delta is None:
+            self.stop()
+        else:
+            with Session(engine) as sess:
+                while self.remind_time_planned < datetime.now():
+                    self.remind_time_real = self.remind_time_planned = self.remind_time_planned + delta
+                sess.add(self)
+                sess.commit()
+
     def success(self):
         self.rewind()
         # todo add user karma
@@ -150,18 +163,6 @@ class Reminder(Base):
 
     def skip(self):
         self.rewind()
-
-    def rewind(self):
-        locals_ = {}
-        exec(f"delta = {self.period}", {"relativedelta": relativedelta}, locals_)
-        delta = locals_["delta"]
-        if delta is None:
-            self.stop()
-        else:
-            with Session(engine) as sess:
-                self.remind_time_real = self.remind_time_planned = self.remind_time_planned + delta
-                sess.add(self)
-                sess.commit()
 
     def stop(self) -> None:
         with Session(engine) as sess:
