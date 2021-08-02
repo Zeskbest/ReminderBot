@@ -129,8 +129,14 @@ class SaveMenu(_Menu):
     @classmethod
     def handle(cls, update: Update, context: CallbackContext) -> Message:
         # todo really save it
-        reminder = Reminder.pop_current(update)
+        reminder = Reminder.get_current(update)
+        for attrName in ('name', 'date'):
+            if getattr(reminder, attrName) is None:
+                cls.resolve_markup(update, context, f"Fulfill the '{attrName}', it is required.")
+                return AddReminderMenu.handle_menu(update, context)
+
         models.Reminder.create(reminder, update)
+        Reminder.pop_current(update)
         return cls.resolve_markup(update, context, "Saved successfully.")
 
 
@@ -163,6 +169,10 @@ class AddReminderMenu(_Menu):
             # when came from outside
             return update.message.reply_text(text=text, reply_markup=cls.markup)
         return update.callback_query.message.edit_text(text=text, reply_markup=cls.markup)
+
+    @classmethod
+    def handle_menu(cls, update: Update, context: CallbackContext) -> Message:
+        return update.effective_chat.send_message(text=cls.name, reply_markup=cls.markup)
 
 
 class MainMenu(_Menu):
