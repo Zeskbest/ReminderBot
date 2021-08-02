@@ -1,5 +1,6 @@
+#!/usr/bin/env python3.9
 """
-Entrypoint.
+An entrypoint.
 """
 from src.telegram_api import main
 
