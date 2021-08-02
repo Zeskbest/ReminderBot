@@ -245,25 +245,29 @@ class ReminderMsg(_Menu):
         reminder_id, action = re.match(cls.link, update.callback_query.data).groups()
         reminder_id = int(reminder_id)
         reminder = models.Reminder.get(reminder_id)
+        text = ""
         if action == "DONE":  # todo criteria
             reminder.success()
+            text = "Reminder marked as Done."
         elif action == "SKIP":
             reminder.skip()
+            text = "Reminder marked as Skip."
         elif action == "REMOVE":
             reminder.stop()
         elif action in ("SNOOZE15", "SNOOZE60"):
             snooze = int(action[len("SNOOZE"):])
             reminder.snooze(relativedelta(minutes=snooze))
+            text = "Reminder marked as Snooze."
         else:
             raise NotImplementedError(f"Unknown action: {action}")
 
-        if reminder.status == 1:
-            text = (
+        if models.Reminder.get(reminder_id).status == 1:
+            text += (
                     "M'kay.\n"
                     "Reminder is active, next remind in " + reminder.remind_time_real.strftime('%d.%m.%Y %H:%M:%S')
             )
         else:
-            text = "M'kay.\nReminder ended"
+            text += "M'kay.\nReminder ended"
         return cls.resolve_markup(update, context, text)
 
 
