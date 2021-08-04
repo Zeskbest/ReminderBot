@@ -261,13 +261,11 @@ class ReminderMsg(_Menu):
         else:
             raise NotImplementedError(f"Unknown action: {action}")
 
-        if models.Reminder.get(reminder_id).status == 1:
-            text += (
-                    "M'kay.\n"
-                    "Reminder is active, next remind in " + reminder.remind_time_real.strftime('%d.%m.%Y %H:%M:%S')
-            )
+        reminder = models.Reminder.get(reminder_id)
+        if reminder.status == 1:
+            text += "\nReminder is active, next remind in " + reminder.remind_time_real.strftime('%d.%m.%Y %H:%M:%S')
         else:
-            text += "M'kay.\nReminder ended"
+            text += "\nReminder ended."
         return cls.resolve_markup(update, context, text)
 
 
