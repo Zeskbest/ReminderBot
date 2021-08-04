@@ -108,8 +108,8 @@ class Reminder(Base):
 
     @classmethod
     def create(cls, reminder_obj: ReminderObj, update: Update) -> Reminder:
-        chat_user = ChatUser.get_or_create(update)
         with Session(engine) as sess:
+            chat_user = ChatUser.get_or_create(update)
             reminder = cls(
                 text=reminder_obj.name,
                 create_time=reminder_obj.date,
