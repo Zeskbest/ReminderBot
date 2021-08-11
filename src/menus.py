@@ -272,7 +272,7 @@ class SaveMenu(_Menu):
 
         models.Reminder.create(reminder, update)
         Reminder.pop_current(update)
-        return cls.resolve_markup(update, context, "Saved successfully.")
+        return cls.resolve_markup(update, context, "Saved.")
 
 
 class AddReminderMenu(_Menu):
@@ -285,9 +285,9 @@ class AddReminderMenu(_Menu):
     markup = InlineKeyboardMarkup(
         [
             [InlineKeyboardButton("Choose name", callback_data=ReminderNameMenu.link)],
-            [InlineKeyboardButton("Choose first remind date", callback_data=ReminderDateMenu.link)],
-            [InlineKeyboardButton("Choose first remind time", callback_data=ReminderTimeMenu.link)],
-            [InlineKeyboardButton("Choose period", callback_data=PeriodMenu.link)],
+            [InlineKeyboardButton("Set first remind date", callback_data=ReminderDateMenu.link)],
+            [InlineKeyboardButton("Set first remind time", callback_data=ReminderTimeMenu.link)],
+            [InlineKeyboardButton("Set period", callback_data=PeriodMenu.link)],
             [InlineKeyboardButton("Save", callback_data=SaveMenu.link)],
             [InlineKeyboardButton("Cancel", callback_data=CancelMenu.link)],
         ]
