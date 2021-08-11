@@ -7,7 +7,7 @@ from typing import Optional
 
 from dateutil.relativedelta import relativedelta
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Message, \
-    Update
+    Update, ReplyMarkup, ForceReply
 from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, MessageHandler, Filters, CallbackContext
 
 from src.callendar_telegram import telegramcalendar
@@ -35,13 +35,14 @@ class _Menu:
         return update.callback_query.message.edit_text(text=cls.name, reply_markup=cls.markup)
 
     @classmethod
-    def resolve_markup(cls, update: Update, context, text: str):
+    def resolve_markup(cls, update: Update, context, text: str, reply_markup: Optional[ReplyMarkup] = None):
         update.callback_query.message.edit_reply_markup(reply_markup=None)
-        # todo maybe need to replace with effective_chat
+        # todo use ReplyMarkup
 
         return context.bot.send_message(
             chat_id=update.effective_chat.id,
             text=text,
+            reply_markup=reply_markup,
         )
 
     @classmethod
@@ -127,7 +128,6 @@ class SaveMenu(_Menu):
 
     @classmethod
     def handle(cls, update: Update, context: CallbackContext) -> Message:
-        # todo really save it
         reminder = cls.get_reminder(update, context)
         for attrName in ('name', 'date'):
             if getattr(reminder, attrName) is None:
