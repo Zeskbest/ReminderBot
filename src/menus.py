@@ -151,7 +151,7 @@ class ReminderDateMenu(_Menu):
     Menu for adding a first reminder date.
     """
 
-    name = f"Add a reminder create_time:\nToday is{datetime.now().strftime('%e %b %Y')}."
+    name = f"Add a reminder create_time:\nToday is {datetime.now().strftime('%e %b %Y')}."
     link = "add_reminder_date"
     markup = telegramcalendar.create_calendar()
 
