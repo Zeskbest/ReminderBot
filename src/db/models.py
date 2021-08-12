@@ -210,6 +210,7 @@ class Reminder(Base):
             chat-user
         """
         with Session(engine) as sess:
+            sess.add(self)
             chat_user = sess.query(ChatUser).join(Reminder).filter(Reminder.id == self.id).scalar()
             return chat_user
 
@@ -235,8 +236,10 @@ class Reminder(Base):
         Reminder was successful.
         """
         self.rewind()
+
+        chat_user = self.get_chat_user()
+        # todo separate func
         with Session(engine) as sess:
-            chat_user = self.get_chat_user()
             chat_user.karma += 1
             sess.add(chat_user)
             sess.commit()
@@ -253,7 +256,9 @@ class Reminder(Base):
             sess.add(self)
             sess.commit()
 
-            chat_user = self.get_chat_user()
+        chat_user = self.get_chat_user()
+        # todo separate func
+        with Session(engine) as sess:
             chat_user.karma -= 0.1
             sess.add(chat_user)
             sess.commit()
