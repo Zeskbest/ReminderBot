@@ -1,12 +1,11 @@
 import os
 import traceback
 
-from dateutil.relativedelta import relativedelta
 from telegram import Update
 from telegram.ext import Updater, CallbackContext
 
 from src.db import models
-from src.menus import apply_menus, ReminderMsg
+from src.menus import apply_menus
 
 
 def error(update: Update, context: CallbackContext) -> None:
@@ -32,8 +31,8 @@ def push_reminders(context: CallbackContext):
         context: telegram context object
     """
     for reminder in models.Reminder.get_actual_reminders():
-        ReminderMsg.handle_first(context, reminder)
-        reminder.snooze(relativedelta(days=1))
+        context.bot.send_message(text=reminder.text, chat_id=models.Reminder.get(reminder.id).chat_id)
+        reminder.success()
 
 
 def main() -> None:
