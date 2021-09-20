@@ -316,7 +316,7 @@ class MessageForRemoval(Base):
             with Session(engine) as sess:
                 deleteSt: Query = (
                     sess.query(MessageForRemoval)
-                    .filter(MessageForRemoval.create_time < datetime.now() - timedelta(days=-1))
+                    .filter(MessageForRemoval.create_time < datetime.now() - timedelta(days=1))
                     .limit(1000)
                 )
                 for msg in deleteSt.all():
