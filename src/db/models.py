@@ -314,10 +314,8 @@ class MessageForRemoval(Base):
         cnt = 1
         while cnt:
             with Session(engine) as sess:
-                deleteSt: Query = (
-                    sess.query(MessageForRemoval)
-                    .filter(MessageForRemoval.create_time < datetime.now() - timedelta(days=1))
-                    .limit(1000)
+                deleteSt: Query = sess.query(MessageForRemoval).filter(
+                    MessageForRemoval.create_time < datetime.now() - timedelta(days=1)
                 )
                 for msg in deleteSt.all():
                     yield msg

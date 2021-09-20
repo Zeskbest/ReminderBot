@@ -381,6 +381,7 @@ class MainMenu(_Menu):
         Returns:
             sent message
         """
+        MessagesRemover.remember_msg(update.message)
         return update.effective_chat.send_message(text=cls.name, reply_markup=cls.markup)
 
     @classmethod
