@@ -3,17 +3,15 @@ Module with Menus (UI analog).
 """
 from __future__ import annotations
 
-import re
-from datetime import datetime
 from operator import attrgetter
 from typing import Optional
 
-from dateutil.relativedelta import relativedelta
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, Message, Update, ReplyMarkup
 from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, MessageHandler, Filters, CallbackContext
 
 from src.callendar_telegram import telegramcalendar
 from src.db import models
+from src.processors.old_messages_remover import MessagesRemover
 from src.processors.reminder_processor import Reminder, ReminderField, NothingToDo
 
 
@@ -369,6 +367,7 @@ class MainMenu(_Menu):
             sent message
         """
         models.User.get_or_create(update)
+        MessagesRemover.remember_msg(update.message)
         return update.message.reply_text(text=cls.name, reply_markup=cls.markup)
 
     @classmethod
@@ -417,6 +416,7 @@ class RawMessagesProcessor(_Menu):
         Returns:
             reply message
         """
+        MessagesRemover.remember_msg(update.message)
         try:
             cls.get_reminder(update, context).process(update)
         except (NothingToDo, ReminderNotFound, ValueError):

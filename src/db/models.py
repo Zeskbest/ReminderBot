@@ -3,13 +3,13 @@ Database models here.
 """
 from __future__ import annotations
 
-from datetime import datetime
-from typing import List
+from datetime import datetime, timedelta
+from typing import List, Iterator
 
 import sqlalchemy as sa
 from dateutil.relativedelta import relativedelta
-from sqlalchemy.orm import Session
-from telegram import Update
+from sqlalchemy.orm import Session, Query
+from telegram import Update, Message
 
 from src.db import Base, engine, metadata
 from src.processors.reminder_processor import Reminder as ReminderObj
@@ -67,18 +67,18 @@ class Chat(Base):
     telegram_id = sa.Column(sa.Integer, primary_key=True)
 
     @classmethod
-    def get_or_create(cls, update: Update) -> Chat:
+    def get_or_create(cls, chat_id: int) -> Chat:
         """
         Get or create new Chat object.
 
         Args:
-            update: telegram update object
+            chat_id: telegram chat id
 
         Returns:
             Chat object
         """
         with Session(engine) as sess:
-            attrs = dict(telegram_id=update.effective_chat.id)
+            attrs = dict(telegram_id=chat_id)
             chat = sess.query(Chat).filter_by(**attrs).one_or_none()
             if chat is None:
                 chat = Chat(**attrs)
@@ -110,7 +110,7 @@ class ChatUser(Base):
         """
         with Session(engine) as sess:
             user = User.get_or_create(update)
-            chat = Chat.get_or_create(update)
+            chat = Chat.get_or_create(update.effective_chat.id)
             sess.add_all((user, chat))
             attrs = dict(user_id=user.telegram_id, chat_id=chat.telegram_id)
             chatUser = sess.query(ChatUser).filter_by(**attrs).one_or_none()
@@ -277,6 +277,52 @@ class Reminder(Base):
             self.status = 0
             sess.add(self)
             sess.commit()
+
+
+class MessageForRemoval(Base):
+    """Message iterate_and_remove model."""
+
+    __tablename__ = "message_for_removal"
+
+    message_id = sa.Column(sa.Integer, primary_key=True)
+    chat_id = sa.Column(sa.Integer, sa.ForeignKey("chat.telegram_id"))
+    create_time = sa.Column(sa.DateTime, index=True)
+
+    @classmethod
+    def create(cls, message: Message) -> None:
+        """
+        Create message for removal.
+
+        Args:
+            message: telegram message to remove
+        """
+        chat_id = message.chat_id
+        Chat.get_or_create(chat_id)
+        with Session(engine) as sess:
+            msg = cls(message_id=message.message_id, chat_id=chat_id, create_time=datetime.now())
+            sess.add(msg)
+            sess.commit()
+
+    @classmethod
+    def iterate_and_remove(cls) -> Iterator[MessageForRemoval]:
+        """
+        Yield messages, than remove them.
+
+        Yields:
+            message by message
+        """
+        cnt = 1
+        while cnt:
+            with Session(engine) as sess:
+                deleteSt: Query = (
+                    sess.query(MessageForRemoval)
+                    .filter(MessageForRemoval.create_time < datetime.now() - timedelta(days=-1))
+                    .limit(1000)
+                )
+                for msg in deleteSt.all():
+                    yield msg
+                cnt = deleteSt.delete()
+                sess.commit()
 
 
 metadata.create_all()

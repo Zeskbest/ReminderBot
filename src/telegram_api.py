@@ -6,6 +6,7 @@ from telegram.ext import Updater, CallbackContext
 
 from src.db import models
 from src.menus import apply_menus
+from src.processors.old_messages_remover import MessagesRemover
 
 
 def error(update: Update, context: CallbackContext) -> None:
@@ -45,9 +46,11 @@ def main() -> None:
         updater = Updater(os.environ["TELEGRAM_TOKEN"], use_context=True)
         apply_menus(updater)
         updater.dispatcher.add_error_handler(error)
+        MessagesRemover.listen_bot(updater.bot)
         ############################# Repeating ########################################
         updater.job_queue.run_repeating(push_reminders, 10)
-        updater.start_polling(timeout=0.1)
+        updater.job_queue.run_repeating(MessagesRemover.remove_messages, 10)
+        updater.start_polling(timeout=0.3)
         updater.idle()
     finally:
         print("The bot stopped")
